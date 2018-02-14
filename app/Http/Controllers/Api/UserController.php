@@ -2,11 +2,46 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\Ajax;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use EasyWeChat\Factory;
 
 class UserController extends Controller
 {
+
+
+    /*
+     * 用户登录
+     *
+     * */
+
+    public function login(Request $request){
+        $data = $request->input('data');
+        $code = isset($data->code) ? $data->code : null;
+        if(empty($code)){
+            Ajax::argumentsError();
+        }
+
+        $config = [
+            'app_id' => env('WEAPP_APPID'),
+            'secret' => env('WEAPP_APPSECRET'),
+
+            // 下面为可选项
+            // 指定 API 调用返回结果的类型：array(default)/collection/object/raw/自定义类名
+            'response_type' => 'array',
+
+            'log' => [
+                'level' => 'debug',
+                'file' => __DIR__.'/wechat.log',
+            ],
+        ];
+
+        $app = Factory::miniProgram($config);
+        $result = $app->auth->session($code);
+
+        Ajax::success($result);
+    }
 
     /*
      * 增加用户

@@ -19,6 +19,8 @@ Route::namespace('Api')->group(function(){
      * 用户
      * */
 
+    // 用户登录
+    Route::post('user/login', "UserController@login");
     // 个人信息
     Route::get('user', "UserController@getUser");
     // 我的收藏
