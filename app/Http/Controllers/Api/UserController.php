@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Helpers\Ajax;
+use App\ModelHelpers\NovelHelper;
+use App\ModelHelpers\UserHelper;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use EasyWeChat\Factory;
@@ -16,10 +18,11 @@ class UserController extends Controller
      *
      * */
 
-    public function login(Request $request){
+    public function login(Request $request)
+    {
         $data = $request->input('data');
         $code = isset($data->code) ? $data->code : null;
-        if(empty($code)){
+        if (empty($code)) {
             Ajax::argumentsError();
         }
 
@@ -33,7 +36,7 @@ class UserController extends Controller
 
             'log' => [
                 'level' => 'debug',
-                'file' => __DIR__.'/wechat.log',
+                'file' => __DIR__ . '/wechat.log',
             ],
         ];
 
@@ -47,7 +50,8 @@ class UserController extends Controller
      * 增加用户
      *
      */
-    public function addUser(){
+    public function addUser()
+    {
 
     }
 
@@ -55,15 +59,34 @@ class UserController extends Controller
      * 获取用户信息
      *
      */
-    public function getUser(){
+    public function getUser()
+    {
 
+    }
+
+    public function getUserLastRead()
+    {
+        $uid = 1;
+        $chapter = UserHelper::getUserLastRead($uid);
+
+        if (empty($chapter)) {
+            return Ajax::dataEmpty();
+        }
+
+        $last_read = [
+            'chapter' => $chapter,
+            'novel' => $chapter->novel
+        ];
+
+        return Ajax::success($last_read);
     }
 
     /*
      * 获取用户收藏
      *
      */
-    public function getUserFavourite(){
+    public function getUserFavourite()
+    {
 
     }
 
@@ -71,7 +94,8 @@ class UserController extends Controller
      * 添加用户收藏
      *
      */
-    public function addUserFavourite(){
+    public function addUserFavourite()
+    {
 
     }
 
@@ -79,7 +103,8 @@ class UserController extends Controller
      * 删除用户收藏
      *
      */
-    public function deleteUserFavourite(){
+    public function deleteUserFavourite()
+    {
 
     }
 
@@ -87,7 +112,8 @@ class UserController extends Controller
      * 用户购买小说
      *
      * */
-    public function addUserNovel(){
+    public function addUserNovel()
+    {
 
     }
 
@@ -96,7 +122,8 @@ class UserController extends Controller
      *
      * */
 
-    public function getUserNovel(){
+    public function getUserNovel()
+    {
 
     }
 
@@ -104,7 +131,8 @@ class UserController extends Controller
      * 获取用户阅读历史
      *
      * */
-    public function getUserReadingHistory(){
+    public function getUserReadingHistory()
+    {
 
     }
 
@@ -112,7 +140,8 @@ class UserController extends Controller
      * 清空用户阅读历史
      *
      * */
-    public function deleteUserReadingHistory(){
+    public function deleteUserReadingHistory()
+    {
 
     }
 
@@ -120,7 +149,8 @@ class UserController extends Controller
      * 充值
      * */
 
-    public function recharge(){
+    public function recharge()
+    {
 
     }
 
@@ -128,7 +158,8 @@ class UserController extends Controller
      * 获取用户充值历史
      * */
 
-    public function getUserRechargeHistory(){
+    public function getUserRechargeHistory()
+    {
 
     }
 
@@ -136,7 +167,8 @@ class UserController extends Controller
      * 获取用户账户信息
      * */
 
-    public function getUserAccount(){
+    public function getUserAccount()
+    {
 
     }
 }

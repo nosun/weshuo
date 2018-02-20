@@ -10,4 +10,6 @@ class Novel extends Model
     protected  $fillable = ['name','author','sn','description','cover','category',
         'status','hot','elite','is_free','free_chapters','price','source_url'];
     public $timestamps = true;
+
+
 }

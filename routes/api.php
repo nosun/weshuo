@@ -3,9 +3,11 @@
 use Illuminate\Http\Request;
 
 Route::namespace('Api')->group(function(){
-    /*
-     * 小说
-     * */
+
+    /* 其他 */
+    Route::get('banners',"PageController@getIndexBanners");
+
+    /* 小说 */
     // 小说列表 {condition}，{order}，{pageSize} {page}
     Route::post('novels',"NovelController@getNovels");
     // 小说目录
@@ -15,14 +17,14 @@ Route::namespace('Api')->group(function(){
     // 小说章节
     Route::get('chapter/{novel_id}/{chapter_id}',"NovelController@getChapter");
 
-    /*
-     * 用户
-     * */
 
+    /* 用户 */
     // 用户登录
     Route::post('user/login', "UserController@login");
     // 个人信息
     Route::get('user', "UserController@getUser");
+    // 用户上次阅读
+    Route::get('user/last_read',"UserController@getUserLastRead");
     // 我的收藏
     Route::get('user/favourites', "UserController@getUserFavourite");
     // 添加收藏

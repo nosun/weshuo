@@ -17,14 +17,34 @@ class NovelHelper
 
     public static function getNovel($novel_id)
     {
-        return Novel::find($novel_id);
+        $novel = Novel::find($novel_id);
+        if ($novel) {
+            $novel->cover = env('APP_URL') . $novel->cover;
+            $novel->last_chapter = Chapter::where('novel_id', $novel_id)
+                                        ->orderBy('chapter_id','desc')
+                                        ->first();
+            $novel->chpter_count = Chapter::where('novel_id', $novel_id)
+                                        ->count();
+        }
+        return $novel;
     }
 
-    public static function getCatalog($novel_id)
+    public static function getCatalog($novel_id, $pageSize=100, $page=1)
     {
-        return Chapter::where('novel_id', $novel_id)
+        $chapters = Chapter::where('novel_id', $novel_id)
             ->orderBy('chapter_id', 'asc')
-            ->get(['chapter_id', 'title']);
+            ->skip(($page -1) * $pageSize)
+            ->take($pageSize)
+            ->get(['chapter_id', 'title','novel_id','is_free']);
+
+        $total = Chapter::where('novel_id', $novel_id)->count();
+        $data  = [
+            'chapters' => $chapters,
+            'count' => $total,
+            'page' => $page,
+            'pageSize' => $pageSize
+        ];
+        return $data;
     }
 
     public static function getNovels($condition, $order, $pageSize = 10, $page = 1)
@@ -57,7 +77,14 @@ class NovelHelper
             $novel = $novel->skip(($page - 1) * $pageSize);
             $novel = $novel->take($pageSize);
         }
+        $novels = $novel->get();
 
-        return $novel->get();
+        if ($novels) {
+            foreach ($novels as $novel) {
+                $novel->cover = env('APP_URL') . $novel->cover;
+            }
+        }
+
+        return $novels;
     }
 }

@@ -25,12 +25,6 @@ class NovelController extends Controller
             return Ajax::argumentsError();
         }
 
-        $condition = json_decode($condition, true);
-
-        if ($order) {
-            $order = json_decode($order, true);
-        }
-
         $novels = NovelHelper::getNovels($condition, $order, $pageSize, $page);
 
         if (empty($novels)) {
