@@ -20,8 +20,8 @@ class UserController extends Controller
 
     public function login(Request $request)
     {
-        $data = $request->input('data');
-        $code = isset($data->code) ? $data->code : null;
+        $code = $request->input('code');
+
         if (empty($code)) {
             Ajax::argumentsError();
         }
