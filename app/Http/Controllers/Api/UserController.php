@@ -4,14 +4,16 @@ namespace App\Http\Controllers\Api;
 
 use App\Helpers\Ajax;
 use App\ModelHelpers\NovelHelper;
+use App\ModelHelpers\SessionHelper;
 use App\ModelHelpers\UserHelper;
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use EasyWeChat\Factory;
+use Illuminate\Support\Facades\Redis;
 
 class UserController extends Controller
 {
-
 
     /*
      * 用户登录
@@ -23,7 +25,7 @@ class UserController extends Controller
         $code = $request->input('code');
 
         if (empty($code)) {
-            Ajax::argumentsError();
+            return Ajax::argumentsError();
         }
 
         $config = [
@@ -41,9 +43,30 @@ class UserController extends Controller
         ];
 
         $app = Factory::miniProgram($config);
-        $result = $app->auth->session($code);
+        $authData = $app->auth->session($code);
 
-        Ajax::success($result);
+        if ($authData['openid']) {
+            $user = User::where('openid', $authData['openid'])->first();
+            if (is_null($user)) {
+                $user = new User();
+                $user->openid = $authData['openid'];
+            }
+            $user->language = $request->input('language', 'zh_CN');
+            $user->nickname = $request->input('nickName', '');
+            $user->country = $request->input('country', '');
+            $user->province = $request->input('province', '');
+            $user->avatar = $request->input('avatar', '');
+            $user->gender = $request->input('gender', 1);
+            $user->save();
+
+            $data = [
+                'session' => SessionHelper::setSession($authData)
+            ];
+
+            return Ajax::success($data);
+        }
+
+        return Ajax::serverError($authData);
     }
 
     /*
@@ -85,18 +108,48 @@ class UserController extends Controller
      * 获取用户收藏
      *
      */
-    public function getUserFavourite()
+    public function getUserFavorites(Request $request)
     {
+        $openid = $request->openid;
+        $user = UserHelper::getUser($openid);
+        if (empty($user)) {
+            return Ajax::forbidden();
+        }
 
+        $novels = UserHelper::getUserFavoriteNovels($user->id);
+
+        if(empty($novels)){
+            return Ajax::dataEmpty();
+        }
+
+        return Ajax::success($novels);
     }
 
     /*
      * 添加用户收藏
      *
      */
-    public function addUserFavourite()
+    public function addUserFavorite(Request $request)
     {
+        $novel_id = $request->post('novel_id', 0);
 
+        if (empty($novel_id)) {
+            return Ajax::argumentsError();
+        }
+
+        $user = UserHelper::getUser($request->openid);
+
+        if (empty($user)) {
+            return Ajax::forbidden();
+        }
+
+        $result = UserHelper::addToFavorite($user->id, $novel_id);
+
+        if ($result === false) {
+            return Ajax::serverError('add favorite fail');
+        }
+
+        return Ajax::success();
     }
 
     /*

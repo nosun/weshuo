@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\ModelHelpers\NovelHelper;
+use App\ModelHelpers\UserHelper;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Helpers\Ajax;
@@ -19,11 +20,7 @@ class NovelController extends Controller
         $condition = $request->input('condition', []);
         $pageSize = $request->input('pageSize', 10);
         $page = $request->input('page', 1);
-        $order = $request->input('order', null);
-
-        if (empty($condition)) {
-            return Ajax::argumentsError();
-        }
+        $order = $request->input('order', ['updated_at' => 'desc']);
 
         $novels = NovelHelper::getNovels($condition, $order, $pageSize, $page);
 
@@ -38,16 +35,22 @@ class NovelController extends Controller
      * 获取小说
      *
      * */
-    public function getNovel($novel_id)
+    public function getNovel(Request $request, $novel_id)
     {
         if (empty($novel_id)) {
-            Ajax::argumentsError();
+            return Ajax::argumentsError();
         }
 
-        $novel = NovelHelper::getNovel($novel_id);
+        $user = UserHelper::getUser($request->openid);
+
+        if(empty($user)){
+            return Ajax::forbidden();
+        }
+
+        $novel = NovelHelper::getNovel($user->id, $novel_id);
 
         if (empty($novel)) {
-            Ajax::dataEmpty();
+            return Ajax::dataEmpty();
         }
 
         return Ajax::success($novel);
@@ -89,5 +92,15 @@ class NovelController extends Controller
         }
 
         return Ajax::success($chapter);
+    }
+
+    public function getCategories(){
+        $categories = NovelHelper::getCategories();
+
+        if(empty($categories)){
+            return Ajax::dataEmpty();
+        }
+
+        return Ajax::success($categories);
     }
 }
