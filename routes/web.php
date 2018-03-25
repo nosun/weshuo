@@ -11,6 +11,6 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::namespace('Api')->group(function(){
+    Route::get('/', 'TestController@getNovels');
 });

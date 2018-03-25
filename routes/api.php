@@ -50,6 +50,7 @@ Route::namespace('Api')->group(function(){
 
         // 小说信息
         Route::get('novel/{novel_id}',"NovelController@getNovel");
+
         // 小说章节
         Route::get('chapter/{novel_id}/{chapter_id}',"NovelController@getChapter");
     });

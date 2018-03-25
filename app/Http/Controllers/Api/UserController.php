@@ -87,36 +87,13 @@ class UserController extends Controller
 
     }
 
-    public function getUserLastRead()
-    {
-        $uid = 1;
-        $chapter = UserHelper::getUserLastRead($uid);
-
-        if (empty($chapter)) {
-            return Ajax::dataEmpty();
-        }
-
-        $last_read = [
-            'chapter' => $chapter,
-            'novel' => $chapter->novel
-        ];
-
-        return Ajax::success($last_read);
-    }
-
     /*
      * 获取用户收藏
      *
      */
     public function getUserFavorites(Request $request)
     {
-        $openid = $request->openid;
-        $user = UserHelper::getUser($openid);
-        if (empty($user)) {
-            return Ajax::forbidden();
-        }
-
-        $novels = UserHelper::getUserFavoriteNovels($user->id);
+        $novels = UserHelper::getUserFavoriteNovels($request->user->id);
 
         if(empty($novels)){
             return Ajax::dataEmpty();
@@ -132,18 +109,17 @@ class UserController extends Controller
     public function addUserFavorite(Request $request)
     {
         $novel_id = $request->post('novel_id', 0);
+        $action = $request->post('action', null);
 
-        if (empty($novel_id)) {
+        if (empty($novel_id) or empty($action)) {
             return Ajax::argumentsError();
         }
 
-        $user = UserHelper::getUser($request->openid);
-
-        if (empty($user)) {
-            return Ajax::forbidden();
+        if($action == 'add'){
+            $result = UserHelper::addToFavorite($request->user->id, $novel_id);
+        }else{
+            $result = UserHelper::removeFavorite($request->user->id, $novel_id);
         }
-
-        $result = UserHelper::addToFavorite($user->id, $novel_id);
 
         if ($result === false) {
             return Ajax::serverError('add favorite fail');
@@ -180,13 +156,31 @@ class UserController extends Controller
 
     }
 
+    public function getUserLastRead(Request $request)
+    {
+        $chapter = UserHelper::getUserLastRead($request->user->id);
+
+        if (empty($chapter)) {
+            return Ajax::dataEmpty();
+        }
+
+        return Ajax::success($chapter);
+    }
+
+
     /*
      * 获取用户阅读历史
      *
      * */
-    public function getUserReadingHistory()
+    public function getUserReadingHistory(Request $request)
     {
+        $history = UserHelper::getUserReadingHistory($request->user->id);
 
+        if(empty($history)){
+            return Ajax::dataEmpty();
+        }
+
+        return Ajax::success($history);
     }
 
     /*

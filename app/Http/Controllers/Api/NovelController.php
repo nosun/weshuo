@@ -7,6 +7,7 @@ use App\ModelHelpers\UserHelper;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Helpers\Ajax;
+use Illuminate\Support\Facades\Redis;
 
 class NovelController extends Controller
 {
@@ -41,13 +42,7 @@ class NovelController extends Controller
             return Ajax::argumentsError();
         }
 
-        $user = UserHelper::getUser($request->openid);
-
-        if(empty($user)){
-            return Ajax::forbidden();
-        }
-
-        $novel = NovelHelper::getNovel($user->id, $novel_id);
+        $novel = NovelHelper::getNovel($request->user->id, $novel_id);
 
         if (empty($novel)) {
             return Ajax::dataEmpty();
@@ -79,7 +74,7 @@ class NovelController extends Controller
      * 获取小说章节
      *
      * */
-    public function getChapter($novel_id, $chapter_id)
+    public function getChapter($novel_id, $chapter_id, Request $request)
     {
         if (empty($novel_id) || empty($chapter_id)) {
             return Ajax::argumentsError();
@@ -87,17 +82,32 @@ class NovelController extends Controller
 
         $chapter = NovelHelper::getChapter($novel_id, $chapter_id);
 
-        if(empty($chapter)){
+        if (empty($chapter)) {
             return Ajax::dataEmpty();
         }
+
+        // check is_free and has already buy the novel
+        if ($chapter->is_free !== 1 and
+            $this->checkPermission($request->user->id, $chapter->novel_id) !== true
+        ) {
+            return Ajax::forbidden();
+        }
+
+        UserHelper::addToUserReadingHistory($request->user->id, $chapter->novel_id, $chapter->chapter_id);
 
         return Ajax::success($chapter);
     }
 
-    public function getCategories(){
+    public function checkPermission($uid, $novel_id)
+    {
+        return false;
+    }
+
+    public function getCategories()
+    {
         $categories = NovelHelper::getCategories();
 
-        if(empty($categories)){
+        if (empty($categories)) {
             return Ajax::dataEmpty();
         }
 

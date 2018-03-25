@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Helpers\Ajax;
 use App\ModelHelpers\SessionHelper;
+use App\ModelHelpers\UserHelper;
 use Closure;
 
 class MiniProcessAuth
@@ -31,7 +32,13 @@ class MiniProcessAuth
 
         $openid = $session_data['openid'];
 
-        $request->openid = $openid;
+        $user = UserHelper::getUser($openid);
+
+        if(empty($user)){
+            return Ajax::dataEmpty();
+        }
+
+        $request->user = $user;
 
         return $next($request);
     }

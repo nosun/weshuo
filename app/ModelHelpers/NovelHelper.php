@@ -9,6 +9,7 @@ use App\Models\UserFavorite;
 class NovelHelper
 {
     public static $filterable = ['name', 'author', 'sn', 'category', 'status', 'hot', 'elite', 'is_free'];
+    public static $searchable = ['id', 'name', 'author', 'sn', 'category', 'status', 'hot', 'elite', 'is_free'];
 
     public static function getChapter($novel_id, $chapter_id)
     {
@@ -61,7 +62,7 @@ class NovelHelper
                     $_arr = explode(' ', $key);
                     $k = $_arr[0];
                     $op = $_arr[1];
-                    if (!in_array($k, self::$filterable)) {
+                    if (!in_array($k, self::$searchable)) {
                         continue;
                     }
                     if ($k && $op && in_array($op, ['>', '<', ">=", "<=", "=", 'like'])) {
@@ -93,6 +94,9 @@ class NovelHelper
 
         if ($novels) {
             foreach ($novels as $novel) {
+                if(empty($novel->cover)){
+                    $novel->cover = 'skin/images/default_cover.jpg';
+                }
                 $novel->cover = env('APP_URL') . $novel->cover;
             }
         }
