@@ -12,5 +12,7 @@
 */
 
 Route::namespace('Api')->group(function(){
-    Route::get('/', 'TestController@getNovels');
+    Route::get('/', function(){
+        return "hello";
+    });
 });
